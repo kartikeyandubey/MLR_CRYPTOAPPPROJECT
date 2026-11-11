@@ -1,0 +1,75 @@
+import React from "react";
+import { Link } from "@tanstack/react-router";
+import { formatPrice, formatQty, formatUsd } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+export default function HoldingsTable({ holdings = [], assets = [] }) {
+  const priceOf = (symbol) => Number(assets.find((a) => a.symbol === symbol)?.price || 0);
+
+  if (!holdings.length) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border bg-card/50 px-6 py-14 text-center">
+        <p className="font-display text-lg tracking-tight">No positions yet</p>
+        <p className="mx-auto mt-2 max-w-sm text-[0.88rem] leading-relaxed text-muted-foreground">
+          Your holdings will appear here the moment your first order fills.
+        </p>
+        <Link
+          to="/trade"
+          className="mt-5 inline-flex rounded-full bg-primary px-5 py-2.5 font-mono text-[0.64rem] uppercase tracking-[0.16em] text-primary-foreground"
+        >
+          Open terminal
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-border/60 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
+            <th className="px-4 py-3 text-left font-normal sm:px-6">Asset</th>
+            <th className="px-4 py-3 text-right font-normal">Quantity</th>
+            <th className="hidden px-4 py-3 text-right font-normal sm:table-cell">Avg cost</th>
+            <th className="px-4 py-3 text-right font-normal sm:px-6">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {holdings.map((holding) => {
+            const price = priceOf(holding.symbol);
+            const value = Number(holding.quantity) * price;
+            const avg = Number(holding.avg_price || 0);
+            const pnl = avg > 0 ? ((price - avg) / avg) * 100 : 0;
+            return (
+              <tr key={holding.id} className="border-b border-border/40 last:border-0">
+                <td className="px-4 py-3.5 sm:px-6">
+                  <div className="flex items-center gap-2.5">
+                    <span className="grid h-7 w-7 place-items-center rounded-full bg-secondary font-mono text-[0.55rem] font-semibold text-primary">
+                      {holding.symbol.slice(0, 3)}
+                    </span>
+                    <div>
+                      <p className="font-mono text-[0.78rem] text-foreground">{holding.symbol}</p>
+                      <p className={cn("font-mono text-[0.6rem]", pnl >= 0 ? "text-up" : "text-down")}>
+                        {pnl >= 0 ? "+" : ""}
+                        {pnl.toFixed(2)}%
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-[0.76rem] text-muted-foreground tabular-nums">
+                  {formatQty(holding.quantity)}
+                </td>
+                <td className="hidden px-4 py-3.5 text-right font-mono text-[0.76rem] text-muted-foreground tabular-nums sm:table-cell">
+                  {formatPrice(avg)}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-[0.78rem] text-foreground tabular-nums sm:px-6">
+                  {formatUsd(value)}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
