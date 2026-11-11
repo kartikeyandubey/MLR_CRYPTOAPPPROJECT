@@ -1,0 +1,77 @@
+import React from "react";
+import { formatQty, formatUsd } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+const when = (value) =>
+  value
+    ? new Date(value).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC",
+      })
+    : "—";
+
+export default function OrdersTable({ orders = [], showTrader = false, emptyLabel = "No orders yet." }) {
+  if (!orders.length) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border bg-card/50 px-6 py-12 text-center text-[0.88rem] text-muted-foreground">
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[34rem]">
+          <thead>
+            <tr className="border-b border-border/60 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
+              <th className="px-4 py-3 text-left font-normal sm:px-6">Side</th>
+              <th className="px-4 py-3 text-left font-normal">Asset</th>
+              {showTrader && <th className="px-4 py-3 text-left font-normal">Trader</th>}
+              <th className="px-4 py-3 text-right font-normal">Value</th>
+              <th className="px-4 py-3 text-right font-normal">Margin 1%</th>
+              <th className="px-4 py-3 text-right font-normal sm:px-6">Filled</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.id} className="border-b border-border/40 last:border-0">
+                <td className="px-4 py-3.5 sm:px-6">
+                  <span
+                    className={cn(
+                      "inline-flex rounded-full px-2.5 py-1 font-mono text-[0.56rem] uppercase tracking-[0.14em]",
+                      order.side === "buy" ? "bg-up/12 text-up" : "bg-down/12 text-down"
+                    )}
+                  >
+                    {order.side}
+                  </span>
+                </td>
+                <td className="px-4 py-3.5">
+                  <p className="font-mono text-[0.78rem] text-foreground">{order.symbol}</p>
+                  <p className="font-mono text-[0.6rem] text-muted-foreground">{formatQty(order.quantity)}</p>
+                </td>
+                {showTrader && (
+                  <td className="max-w-[10rem] truncate px-4 py-3.5 text-[0.78rem] text-muted-foreground">
+                    {order.user_name || order.user_email}
+                  </td>
+                )}
+                <td className="px-4 py-3.5 text-right font-mono text-[0.78rem] text-foreground tabular-nums">
+                  {formatUsd(order.notional)}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-[0.78rem] text-primary tabular-nums">
+                  {formatUsd(order.fee)}
+                </td>
+                <td className="px-4 py-3.5 text-right font-mono text-[0.66rem] text-muted-foreground tabular-nums sm:px-6">
+                  {when(order.created_date)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
