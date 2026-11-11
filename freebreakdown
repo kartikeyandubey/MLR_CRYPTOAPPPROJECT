@@ -1,0 +1,28 @@
+import React from "react";
+import { formatPrice, formatQty, formatUsd } from "@/lib/format";
+
+export default function FeeBreakdown({ side, symbol, price, notional, fee, net }) {
+  const quantity = price > 0 ? (side === "buy" ? net / price : notional / price) : 0;
+  return (
+    <dl className="space-y-2.5 rounded-xl border border-border/80 bg-background/60 p-4 font-mono text-[0.76rem]">
+      <div className="flex items-center justify-between gap-4">
+        <dt className="text-muted-foreground">Reference price</dt>
+        <dd className="text-foreground">{formatPrice(price)}</dd>
+      </div>
+      <div className="flex items-center justify-between gap-4">
+        <dt className="text-muted-foreground">Order value</dt>
+        <dd className="text-foreground">{formatUsd(notional)}</dd>
+      </div>
+      <div className="flex items-center justify-between gap-4">
+        <dt className="text-muted-foreground">Platform margin · 1.00%</dt>
+        <dd className="text-primary">{formatUsd(fee)}</dd>
+      </div>
+      <div className="flex items-center justify-between gap-4 border-t border-border/70 pt-2.5">
+        <dt className="text-foreground">{side === "buy" ? `You receive` : "You receive"}</dt>
+        <dd className="text-foreground">
+          {side === "buy" ? `${formatQty(quantity)} ${symbol}` : formatUsd(net)}
+        </dd>
+      </div>
+    </dl>
+  );
+}
